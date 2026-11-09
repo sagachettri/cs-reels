@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Demo video** | https://youtu.be/jIJvZNRs0OM |
-| **Source code** | https://github.com/sonisingh01/cs-reels |
+| **Source code** | https://github.com/sagachettri/cs-reels |
 | **Live link** | Not deployed for this prototype. It runs locally: see [Run it locally](#run-it-locally) |
 | **Team** | Soni Singh and Sagar Chettri (both worked on the frontend and the backend, roughly 50-50) |
 
