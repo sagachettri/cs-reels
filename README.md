@@ -2,7 +2,7 @@
 
 **Built by Soni Singh and Sagar Chettri.**
 
-**Short-form learning videos for computer science students.** Swipe through bite-sized videos on DSA, web development, core CS and career tips, then save them, test yourself with an AI quiz, or ask an AI tutor, all in one place.
+**Short-form learning videos for computer science students.** Swipe through bite-sized videos on DSA, web development, core CS and career tips. Watch them for studies or just for fun, then save them, test yourself with an AI quiz, or ask an AI tutor, all in one place.
 
 | | |
 |---|---|
