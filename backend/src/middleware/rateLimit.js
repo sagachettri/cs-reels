@@ -39,3 +39,18 @@ export const aiLimiter = makeLimiter({
   message: 'You have used the AI features a lot in a short time. Please wait a few minutes.',
   keyGenerator: (req) => String(req.user._id),
 });
+
+// Per logged-in user (these run after authenticate).
+export const quizLimiter = makeLimiter({
+  windowMs: 10 * 60 * 1000,
+  limit: 60,
+  message: 'You are submitting quizzes very quickly. Please slow down for a moment.',
+  keyGenerator: (req) => String(req.user._id),
+});
+
+export const viewLimiter = makeLimiter({
+  windowMs: 10 * 60 * 1000,
+  limit: 200,
+  message: 'Too many activity updates. Please slow down.',
+  keyGenerator: (req) => String(req.user._id),
+});

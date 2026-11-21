@@ -9,6 +9,8 @@ import {
   TUTOR_SYSTEM,
   QUIZ_SYSTEM,
   CHAT_SYSTEM,
+  REEL_CHAT_SYSTEM,
+  reelContext,
   explainPrompt,
   summaryPrompt,
   quizPrompt,
@@ -26,7 +28,7 @@ function provider() {
 }
 
 export function contentHash(reel) {
-  const material = JSON.stringify([reel.title, reel.description, reel.keyTakeaway, reel.tags, reel.level]);
+  const material = JSON.stringify([reel.title, reel.description, reel.keyTakeaway, reel.tags, reel.level, reel.transcript || '']);
   return crypto.createHash('sha256').update(material).digest('hex').slice(0, 16);
 }
 
@@ -75,13 +77,13 @@ function parseQuiz(raw) {
   return quizSchema.parse(JSON.parse(cleaned)).questions;
 }
 
-async function generateQuestions(reel) {
+async function generateQuestions(reel, difficulty) {
   let lastError;
   // One retry: models occasionally return malformed JSON.
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     const raw = await provider().generate({
       system: QUIZ_SYSTEM,
-      messages: [{ role: 'user', content: quizPrompt(reel) }],
+      messages: [{ role: 'user', content: quizPrompt(reel, difficulty) }],
       json: true,
       temperature: attempt === 1 ? 0.5 : 0.2,
     });
@@ -95,23 +97,33 @@ async function generateQuestions(reel) {
   throw new ApiError(502, 'AI_BAD_RESPONSE', 'The AI could not produce a valid quiz this time. Please try again.');
 }
 
-export async function getOrCreateQuiz(reel) {
+// Returns the stored quiz document (with answers; callers must strip them with toPublicQuiz before sending).
+export async function getOrCreateQuiz(reel, difficulty = 'medium') {
   const hash = contentHash(reel);
-  const existing = await Quiz.findOne({ reel: reel._id }).lean();
+  const existing = await Quiz.findOne({ reel: reel._id, difficulty }).lean();
   if (existing && existing.contentHash === hash) {
-    return { questions: existing.questions, cached: true };
+    return { quiz: existing, cached: true };
   }
 
-  const questions = await generateQuestions(reel);
-  await Quiz.findOneAndUpdate(
-    { reel: reel._id },
-    { reel: reel._id, contentHash: hash, questions, model: env.ai.geminiModel },
+  const questions = await generateQuestions(reel, difficulty);
+  const quiz = await Quiz.findOneAndUpdate(
+    { reel: reel._id, difficulty },
+    { reel: reel._id, difficulty, contentHash: hash, questions, model: env.ai.geminiModel },
     { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-  );
-  return { questions, cached: false };
+  ).lean();
+  return { quiz, cached: false };
 }
 
 // ---------- chat ----------
 export function chat(messages) {
   return provider().generate({ system: CHAT_SYSTEM, messages, temperature: 0.5 });
+}
+
+// Follow-up conversation about one reel. The server is stateless: the browser sends the recent messages each time.
+export function reelChat(reel, messages) {
+  return provider().generate({
+    system: `${REEL_CHAT_SYSTEM}\n\nReel details:\n${reelContext(reel)}`,
+    messages,
+    temperature: 0.4,
+  });
 }

@@ -8,6 +8,7 @@ export function reelContext(reel) {
   ];
   if (reel.keyTakeaway) lines.push(`Key takeaway: ${reel.keyTakeaway}`);
   if (reel.tags?.length) lines.push(`Tags: ${reel.tags.join(', ')}`);
+  if (reel.transcript) lines.push(`Transcript or notes: ${reel.transcript.slice(0, 3000)}`);
   return lines.join('\n');
 }
 
@@ -38,8 +39,14 @@ export const QUIZ_SYSTEM = [
   'Rules: 3 to 5 questions; exactly 4 options each; exactly one correct option; correctIndex is the 0-based index of the correct option; options must be different from each other; explanation is 1 or 2 sentences.',
 ].join(' ');
 
-export function quizPrompt(reel) {
-  return `${reelContext(reel)}\n\nCreate the quiz now.`;
+const DIFFICULTY_GUIDE = {
+  easy: 'Easy: check recall of the key terms and the basic idea. Straightforward wording.',
+  medium: 'Medium: check understanding and simple application of the idea, such as small examples or "what happens if" questions.',
+  hard: 'Hard: check deeper reasoning, such as tricky cases, edge cases, comparing approaches or complexity. Distractors must be plausible.',
+};
+
+export function quizPrompt(reel, difficulty = 'medium') {
+  return `${reelContext(reel)}\n\nDifficulty: ${DIFFICULTY_GUIDE[difficulty] || DIFFICULTY_GUIDE.medium}\n\nCreate the quiz now.`;
 }
 
 export const CHAT_SYSTEM = [
@@ -48,4 +55,13 @@ export const CHAT_SYSTEM = [
   'Explain in beginner-friendly language and give a short example when useful. Keep answers focused.',
   'If a question is not related to computer science or technology learning, politely say you can only help with those topics.',
   'Plain text is preferred; short code snippets are fine. If you are not sure about something, say so.',
+].join(' ');
+
+export const REEL_CHAT_SYSTEM = [
+  'You are the CS Reels AI tutor helping a student understand ONE specific reel (a short educational video).',
+  'You only know the reel from the TEXT details given below (title, description, key takeaway, tags, and an optional transcript or notes). You cannot see or hear the video, so never say you watched it and never describe visuals.',
+  'Explain in simple, beginner-friendly language. When it helps, give one small concrete example and walk through it step by step.',
+  'Use the conversation so far to answer follow-up questions. You may use standard computer science knowledge to explain the concept, but say clearly when you go beyond what the reel details say.',
+  'If the student asks about something unrelated to computer science or technology, politely steer back to the reel.',
+  'Plain text only; short code snippets are fine. Keep answers under about 200 words unless the student asks for more.',
 ].join(' ');

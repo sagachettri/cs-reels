@@ -64,7 +64,7 @@ async function findVisibleReel(id, user) {
 
 export async function getReel(req, res) {
   const reel = await findVisibleReel(req.valid.params.id, req.user);
-  return sendSuccess(res, { reel: await serializeOne(reel, req.user?._id) });
+  return sendSuccess(res, { reel: await serializeOne(reel, req.user?._id, { includeTranscript: true }) });
 }
 
 // Content-based and rule-based (not machine learning): shared tags weigh more than a shared category.

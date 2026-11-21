@@ -5,6 +5,8 @@ import { SavedReel } from '../models/SavedReel.js';
 import { Quiz } from '../models/Quiz.js';
 import { Report } from '../models/Report.js';
 import { User } from '../models/User.js';
+import { ReelView } from '../models/ReelView.js';
+import { QuizAttempt } from '../models/QuizAttempt.js';
 import { ApiError } from '../utils/ApiError.js';
 import { sendSuccess, buildPagination, escapeRegex, slugify } from '../utils/helpers.js';
 import { reelPopulate, serializeReel } from '../services/reelService.js';
@@ -13,7 +15,7 @@ import { uploadFile, deleteFile, autoThumbnailUrl } from '../services/imagekitSe
 
 // ---------------- stats ----------------
 export async function getStats(req, res) {
-  const [users, published, drafts, likes, saves, openReports, topReels, categories] = await Promise.all([
+  const [users, published, drafts, likes, saves, openReports, topReels, categories, quizAttempts, reelViews] = await Promise.all([
     User.countDocuments(),
     Reel.countDocuments({ status: 'published' }),
     Reel.countDocuments({ status: 'draft' }),
@@ -22,10 +24,12 @@ export async function getStats(req, res) {
     Report.countDocuments({ status: 'open' }),
     Reel.find({ status: 'published' }).sort({ likesCount: -1, savesCount: -1 }).limit(5).populate(reelPopulate).lean(),
     Category.countDocuments(),
+    QuizAttempt.countDocuments(),
+    ReelView.countDocuments(),
   ]);
 
   return sendSuccess(res, {
-    stats: { users, publishedReels: published, draftReels: drafts, likes, saves, openReports, categories },
+    stats: { users, publishedReels: published, draftReels: drafts, likes, saves, openReports, categories, quizAttempts, reelViews },
     topReels: topReels.map((reel) => serializeReel(reel)),
   });
 }
@@ -51,7 +55,7 @@ export async function listAdminReels(req, res) {
   ]);
 
   return sendSuccess(res, {
-    reels: reels.map((reel) => serializeReel(reel)),
+    reels: reels.map((reel) => serializeReel(reel, {}, { includeTranscript: true })),
     pagination: buildPagination(page, limit, total),
   });
 }
@@ -145,6 +149,8 @@ export async function deleteReel(req, res) {
     Like.deleteMany({ reel: id }),
     SavedReel.deleteMany({ reel: id }),
     Quiz.deleteMany({ reel: id }),
+    QuizAttempt.deleteMany({ reel: id }),
+    ReelView.deleteMany({ reel: id }),
     Report.deleteMany({ reel: id }),
   ]);
 

@@ -26,6 +26,8 @@ const reelSchema = new mongoose.Schema(
     },
     level: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
     keyTakeaway: { type: String, trim: true, maxlength: 300, default: '' },
+    // Optional notes or transcript typed by the admin. The AI uses it as extra, honest context.
+    transcript: { type: String, trim: true, maxlength: 4000, default: '' },
     resources: {
       type: [resourceSchema],
       default: [],

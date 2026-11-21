@@ -177,4 +177,41 @@ describe('AI features (provider mocked, real validation and caching)', () => {
     assert.equal((await user.agent.post('/api/ai/chat').send({ messages: [{ role: 'system', content: 'hi' }] })).status, 400);
     assert.equal((await request(app).post('/api/ai/chat').send({ messages })).status, 401);
   });
+
+  it('answers follow-up questions about ONE reel using its details and the conversation so far', async () => {
+    await Reel.updateOne({ _id: reel._id }, { transcript: 'Binary search compares the middle element first.' });
+    gemini.state.handler = () => ({ text: 'Start in the middle, then discard half.' });
+    const messages = [
+      { role: 'user', content: 'Explain this reel' },
+      { role: 'assistant', content: 'It is about binary search.' },
+      { role: 'user', content: 'Give me an example' },
+    ];
+    const res = await user.agent.post(`/api/ai/reels/${reel._id}/chat`).send({ messages });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.data.reply, 'Start in the middle, then discard half.');
+
+    const sent = gemini.state.calls[0].body;
+    const system = sent.systemInstruction.parts[0].text;
+    assert.match(system, /ONE specific reel/);
+    assert.match(system, /cannot see or hear the video/);
+    assert.match(system, /Binary search intuition/);
+    assert.match(system, /compares the middle element first/);
+    assert.deepEqual(sent.contents.map((c) => c.role), ['user', 'model', 'user']);
+  });
+
+  it('validates reel chat requests and protects drafts', async () => {
+    const url = `/api/ai/reels/${reel._id}/chat`;
+    assert.equal((await request(app).post(url).send({ messages: [{ role: 'user', content: 'hi' }] })).status, 401);
+    assert.equal((await user.agent.post(url).send({ messages: [] })).status, 400);
+    assert.equal((await user.agent.post(url).send({ messages: [{ role: 'assistant', content: 'hi' }] })).status, 400);
+    await Reel.updateOne({ _id: reel._id }, { status: 'draft' });
+    assert.equal((await user.agent.post(url).send({ messages: [{ role: 'user', content: 'hi' }] })).status, 404);
+    assert.equal(gemini.state.calls.length, 0);
+  });
+
+  it('never exposes quiz answers in the quiz start response', async () => {
+    gemini.state.handler = () => ({ text: JSON.stringify(goodQuiz) });
+    const res = await user.agent.post(`/api/ai/reels/${reel._id}/quiz`).send({});
+    assert.equal(JSON.stringify(res.body).includes('correctIndex'), false);
+  });
 });

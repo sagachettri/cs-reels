@@ -9,12 +9,12 @@ export const reelPopulate = [
 ];
 
 // Shape of a reel as sent to the frontend. Never exposes ImageKit file ids.
-export function serializeReel(reel, state = {}) {
+export function serializeReel(reel, state = {}, options = {}) {
   const category = reel.category && reel.category._id
     ? { id: String(reel.category._id), name: reel.category.name, slug: reel.category.slug }
     : null;
 
-  return {
+  const serialized = {
     id: String(reel._id),
     title: reel.title,
     description: reel.description,
@@ -25,6 +25,7 @@ export function serializeReel(reel, state = {}) {
     tags: reel.tags || [],
     level: reel.level,
     keyTakeaway: reel.keyTakeaway || '',
+    hasTranscript: Boolean(reel.transcript),
     resources: (reel.resources || []).map((r) => ({ title: r.title, url: r.url, type: r.type })),
     creator: reel.creditName || reel.uploadedBy?.name || 'CS Reels',
     creditName: reel.creditName || '',
@@ -36,12 +37,15 @@ export function serializeReel(reel, state = {}) {
     liked: Boolean(state.liked),
     saved: Boolean(state.saved),
   };
+  // The full transcript is only sent when asked for (single reel page, admin editing), never in long lists.
+  if (options.includeTranscript) serialized.transcript = reel.transcript || '';
+  return serialized;
 }
 
 // Adds liked / saved flags for the logged-in user (guests always get false).
-export async function serializeReels(reels, userId) {
+export async function serializeReels(reels, userId, options = {}) {
   if (!userId || reels.length === 0) {
-    return reels.map((reel) => serializeReel(reel));
+    return reels.map((reel) => serializeReel(reel, {}, options));
   }
   const ids = reels.map((r) => r._id);
   const [likes, saves] = await Promise.all([
@@ -51,12 +55,12 @@ export async function serializeReels(reels, userId) {
   const likedSet = new Set(likes.map((l) => String(l.reel)));
   const savedSet = new Set(saves.map((s) => String(s.reel)));
   return reels.map((reel) =>
-    serializeReel(reel, { liked: likedSet.has(String(reel._id)), saved: savedSet.has(String(reel._id)) })
+    serializeReel(reel, { liked: likedSet.has(String(reel._id)), saved: savedSet.has(String(reel._id)) }, options)
   );
 }
 
-export async function serializeOne(reel, userId) {
-  const [serialized] = await serializeReels([reel], userId);
+export async function serializeOne(reel, userId, options = {}) {
+  const [serialized] = await serializeReels([reel], userId, options);
   return serialized;
 }
 

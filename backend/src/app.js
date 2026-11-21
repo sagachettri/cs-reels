@@ -12,6 +12,8 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import reelRoutes from './routes/reelRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import progressRoutes from './routes/progressRoutes.js';
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/reels', reelRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/quizzes', quizRoutes);
+app.use('/api/progress', progressRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
