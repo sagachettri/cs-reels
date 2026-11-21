@@ -16,6 +16,7 @@ const EMPTY = {
   status: 'published',
   tags: '',
   keyTakeaway: '',
+  transcript: '',
   creditName: '',
   resources: [],
 };

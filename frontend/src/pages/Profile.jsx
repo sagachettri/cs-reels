@@ -97,6 +97,9 @@ export default function Profile() {
         </form>
 
         <div className="button-row">
+          <Link to="/progress" className="btn btn-ghost">
+            My learning progress
+          </Link>
           {user.role === 'admin' && (
             <Link to="/admin" className="btn btn-ghost">
               Admin dashboard

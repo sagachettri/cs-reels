@@ -63,6 +63,16 @@ export default function ReelFields({ values, onChange, categories, idPrefix = 'r
       <label htmlFor={`${idPrefix}-takeaway`}>Key takeaway (one sentence, helps the AI)</label>
       <input id={`${idPrefix}-takeaway`} value={values.keyTakeaway} onChange={set('keyTakeaway')} maxLength={300} />
 
+      <label htmlFor={`${idPrefix}-transcript`}>Transcript or notes (optional, makes AI answers more accurate)</label>
+      <textarea
+        id={`${idPrefix}-transcript`}
+        rows={4}
+        value={values.transcript}
+        onChange={set('transcript')}
+        maxLength={4000}
+        placeholder="What is said or shown in the reel. The AI uses this text to explain and quiz."
+      />
+
       <label htmlFor={`${idPrefix}-credit`}>Creator or source credit (optional)</label>
       <input id={`${idPrefix}-credit`} value={values.creditName} onChange={set('creditName')} maxLength={80} />
 
@@ -125,6 +135,7 @@ export function toApiFields(values) {
     level: values.level,
     status: values.status,
     keyTakeaway: values.keyTakeaway.trim(),
+    transcript: values.transcript.trim(),
     creditName: values.creditName.trim(),
     tags: values.tags
       .split(',')
@@ -145,6 +156,7 @@ export function fromReel(reel) {
     status: reel.status === 'published' ? 'published' : 'draft',
     tags: reel.tags.join(', '),
     keyTakeaway: reel.keyTakeaway || '',
+    transcript: reel.transcript || '',
     creditName: reel.creditName || '',
     resources: reel.resources.map((r) => ({ ...r })),
   };

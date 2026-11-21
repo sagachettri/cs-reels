@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getFeed } from '../services/reelService';
+import { getRecommended } from '../services/learningService';
 import { usePagedReels } from '../hooks/usePagedReels';
 import { useCategories } from '../hooks/useCategories';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +15,12 @@ export default function Feed() {
   usePageTitle('Reels');
   const { user } = useAuth();
   const { categories } = useCategories();
-  const paged = usePagedReels((page) => getFeed({ page, limit: 8 }), 'feed');
+  const [params, setParams] = useSearchParams();
+  const forYou = Boolean(user) && params.get('tab') === 'for-you';
+  const paged = usePagedReels(
+    (page) => (forYou ? getRecommended({ page, limit: 8 }) : getFeed({ page, limit: 8 })),
+    forYou ? 'for-you' : 'feed'
+  );
 
   let body;
   if (paged.loading) {
@@ -46,6 +52,16 @@ export default function Feed() {
   return (
     <div className="feed-page">
       <div className="feed-chips">
+        {user && (
+          <div className="feed-tabs" role="tablist" aria-label="Feed type">
+            <button type="button" role="tab" aria-selected={!forYou} className={`feed-tab ${!forYou ? 'is-active' : ''}`} onClick={() => setParams({})}>
+              Latest
+            </button>
+            <button type="button" role="tab" aria-selected={forYou} className={`feed-tab ${forYou ? 'is-active' : ''}`} onClick={() => setParams({ tab: 'for-you' })}>
+              For you
+            </button>
+          </div>
+        )}
         <CategoryChips categories={categories} />
       </div>
       {body}

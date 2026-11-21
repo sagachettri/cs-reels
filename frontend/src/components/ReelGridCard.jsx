@@ -22,6 +22,7 @@ export default function ReelGridCard({ reel }) {
         <p className="muted small">
           {reel.category?.name} · {capitalize(reel.level)}
         </p>
+        {reel.reason && <p className="reason small">{reel.reason}</p>}
         <p className="muted small likes-line">
           <HeartIcon filled={reel.liked} /> {reel.likesCount}
         </p>

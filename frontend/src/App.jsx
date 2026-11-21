@@ -16,6 +16,7 @@ import Liked from './pages/Liked';
 import Profile from './pages/Profile';
 import ReelDetail from './pages/ReelDetail';
 import Chatbot from './pages/Chatbot';
+import Progress from './pages/Progress';
 import NotFound from './pages/NotFound';
 import Dashboard from './pages/admin/Dashboard';
 import UploadReel from './pages/admin/UploadReel';
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/liked" element={<Liked />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/chat" element={<Chatbot />} />
+          <Route path="/progress" element={<Progress />} />
         </Route>
 
         <Route element={<AdminRoute />}>

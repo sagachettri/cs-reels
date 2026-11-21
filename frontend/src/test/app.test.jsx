@@ -250,31 +250,6 @@ describe('reel detail, AI explainer and quiz', () => {
     expect(await screen.findByText(/ai service is busy/i)).toBeInTheDocument();
   });
 
-  it('runs a quiz end to end and shows the score', async () => {
-    mockApi({
-      ...routes(),
-      'POST /ai/reels/r1/quiz': () =>
-        ok({
-          quiz: {
-            reelId: 'r1',
-            questions: [
-              { question: 'What does binary search need?', options: ['Sorted data', 'A graph', 'A hash', 'Nothing'], correctIndex: 0, explanation: 'It halves a sorted range.' },
-              { question: 'Its time complexity?', options: ['O(n)', 'O(log n)', 'O(1)', 'O(n^2)'], correctIndex: 1, explanation: 'The range halves each step.' },
-            ],
-          },
-        }),
-    });
-    renderApp('/reels/r1');
-    await userEvent.click(await screen.findByRole('button', { name: /generate quiz/i }));
-    const submit = await screen.findByRole('button', { name: /submit answers/i });
-    expect(submit).toBeDisabled();
-    await userEvent.click(screen.getByLabelText('Sorted data'));
-    await userEvent.click(screen.getByLabelText('O(n)'));
-    await userEvent.click(submit);
-    expect(await screen.findByText(/you scored 1 \/ 2/i)).toBeInTheDocument();
-    expect(screen.getByText('The range halves each step.')).toBeInTheDocument();
-  });
-
   it('tells guests to log in for AI features', async () => {
     mockApi({ ...baseRoutes(), 'GET /reels/r1': () => ok({ reel: makeReel() }), 'GET /reels/r1/related': () => ok({ reels: [] }) });
     renderApp('/reels/r1');

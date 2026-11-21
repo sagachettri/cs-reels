@@ -27,6 +27,7 @@ export const makeReel = (overrides = {}) => ({
   tags: ['search', 'arrays'],
   level: 'beginner',
   keyTakeaway: 'Halve the range each step.',
+  hasTranscript: false,
   resources: [{ title: 'MDN docs', url: 'https://developer.mozilla.org', type: 'docs' }],
   creator: 'Admin',
   creditName: '',

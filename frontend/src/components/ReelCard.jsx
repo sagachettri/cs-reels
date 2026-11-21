@@ -5,12 +5,16 @@ import ReelActions from './ReelActions';
 import ReportModal from './ReportModal';
 import { FlagIcon, InfoIcon } from './Icons';
 import { capitalize } from '../utils/format';
+import { useWatchTracker } from '../hooks/useWatchTracker';
 
 // One full-screen item of the vertical feed.
 export default function ReelCard({ reel, index, active, loadVideo, muted, onToggleMute, onActivate, onChange }) {
   const ref = useRef(null);
   const [expanded, setExpanded] = useState(false);
   const [reporting, setReporting] = useState(false);
+
+  // Counts real watching (a few seconds on screen) toward the student's progress.
+  useWatchTracker(reel, active, { flushOnStop: true });
 
   // Tell the feed when this card is mostly on screen, so only that reel plays.
   useEffect(() => {
@@ -40,6 +44,7 @@ export default function ReelCard({ reel, index, active, loadVideo, muted, onTogg
             )}
             <span className={`badge level-${reel.level}`}>{capitalize(reel.level)}</span>
           </div>
+          {reel.reason && <p className="reel-reason">{reel.reason}</p>}
           <h2 className="reel-title">{reel.title}</h2>
           <p className={`reel-desc ${expanded ? 'is-open' : ''}`}>{reel.description}</p>
           {reel.description.length > 90 && (

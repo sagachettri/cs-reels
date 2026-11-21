@@ -14,6 +14,8 @@ const LABELS = [
   ['saves', 'Saves'],
   ['categories', 'Categories'],
   ['openReports', 'Open reports'],
+  ['quizAttempts', 'Quiz attempts'],
+  ['reelViews', 'Reels watched (all learners)'],
 ];
 
 export default function Dashboard() {

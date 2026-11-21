@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GridIcon, HomeIcon, SearchIcon, BookmarkIcon, UserIcon } from './Icons';
+import { GridIcon, HomeIcon, SearchIcon, BookmarkIcon, UserIcon, ChartIcon } from './Icons';
 
 // Thumb-friendly navigation, shown only on small screens.
 export default function BottomNav() {
@@ -20,6 +20,12 @@ export default function BottomNav() {
         <SearchIcon />
         <span>Search</span>
       </NavLink>
+      {user && (
+        <NavLink to="/progress">
+          <ChartIcon />
+          <span>Progress</span>
+        </NavLink>
+      )}
       <NavLink to="/saved">
         <BookmarkIcon />
         <span>Saved</span>

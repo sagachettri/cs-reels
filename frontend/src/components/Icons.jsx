@@ -91,6 +91,12 @@ export const ChatIcon = () => (
   </svg>
 );
 
+export const ChartIcon = () => (
+  <svg {...base}>
+    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+  </svg>
+);
+
 export const ChevronUpIcon = () => (
   <svg {...base}>
     <path d="m18 15-6-6-6 6" />

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { askTutor } from '../services/aiService';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { getErrorMessage } from '../utils/errors';
+import { buildRequestMessages } from '../utils/chat';
 import Loader from '../components/Loader';
 
 const STARTERS = [
@@ -10,13 +11,6 @@ const STARTERS = [
   'How does a hash map work?',
   'What is REST?',
 ];
-
-// The server accepts at most 12 messages and the first one should come from the user.
-function buildRequestMessages(messages) {
-  const recent = messages.slice(-11);
-  const firstUser = recent.findIndex((m) => m.role === 'user');
-  return recent.slice(firstUser === -1 ? 0 : firstUser).map(({ role, content }) => ({ role, content }));
-}
 
 export default function Chatbot() {
   usePageTitle('AI Tutor');

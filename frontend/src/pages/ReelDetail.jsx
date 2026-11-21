@@ -11,6 +11,8 @@ import ReportModal from '../components/ReportModal';
 import ResourceList from '../components/ResourceList';
 import AIExplainPanel from '../components/AIExplainPanel';
 import QuizPanel from '../components/QuizPanel';
+import ReelChatPanel from '../components/ReelChatPanel';
+import { useWatchTracker } from '../hooks/useWatchTracker';
 import ReelGridCard from '../components/ReelGridCard';
 import { FlagIcon } from '../components/Icons';
 
@@ -22,6 +24,8 @@ export default function ReelDetail() {
   const [error, setError] = useState('');
   const [videoFailed, setVideoFailed] = useState(false);
   const [reporting, setReporting] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  useWatchTracker(reel ?? { id }, playing);
   usePageTitle(reel?.title || 'Reel');
 
   const load = useCallback(async () => {
@@ -78,6 +82,9 @@ export default function ReelDetail() {
               controls
               playsInline
               preload="metadata"
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onEnded={() => setPlaying(false)}
               onError={() => setVideoFailed(true)}
             />
           )}
@@ -124,8 +131,17 @@ export default function ReelDetail() {
       </div>
 
       <ResourceList resources={reel.resources} />
+      {reel.transcript && (
+        <section className="card">
+          <details>
+            <summary>Transcript and notes</summary>
+            <p className="ai-answer">{reel.transcript}</p>
+          </details>
+        </section>
+      )}
       <AIExplainPanel reelId={reel.id} />
-      <QuizPanel reelId={reel.id} />
+      <ReelChatPanel key={`chat-${reel.id}`} reelId={reel.id} />
+      <QuizPanel key={`quiz-${reel.id}`} reelId={reel.id} />
 
       {related.length > 0 && (
         <section aria-labelledby="related-heading">

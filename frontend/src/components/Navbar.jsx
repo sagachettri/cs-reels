@@ -33,6 +33,7 @@ export default function Navbar() {
         <NavLink to="/categories">Topics</NavLink>
         {user && <NavLink to="/saved">Saved</NavLink>}
         {user && <NavLink to="/liked">Liked</NavLink>}
+        {user && <NavLink to="/progress">Progress</NavLink>}
         {user && <NavLink to="/chat">AI Tutor</NavLink>}
         {user?.role === 'admin' && <NavLink to="/admin">Admin</NavLink>}
       </nav>
