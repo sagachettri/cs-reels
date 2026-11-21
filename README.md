@@ -8,6 +8,8 @@
 
 | | |
 |---|---|
+| **Final round demo video** | https://youtu.be/jw2-t56jVEg |
+| **Round 2 demo video** | https://youtu.be/jIJvZNRs0OM |
 | **Demo video** | https://youtu.be/jIJvZNRs0OM |
 | **Source code** | https://github.com/sonisingh01/cs-reels |
 | **Live link** | Not deployed for this prototype. It runs locally: see [Run it locally](#run-it-locally) |
