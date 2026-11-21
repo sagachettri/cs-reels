@@ -74,10 +74,10 @@ erDiagram
 Password hashing; HTTP-only, SameSite cookie (Secure in production); authentication and role middleware on the server; zod validation on every input; NoSQL injection blocked by type checking; regex input escaped in search; upload checks of type, size and file signature before anything is stored; cleanup of uploaded files if saving fails; rate limits on login, reports, AI and the API; Helmet headers; CORS limited to the frontend origin; secrets only in environment variables; generic error messages in production; same error for unknown email and wrong password.
 
 ## Limitations
-No video transcription (AI uses text details only); video file cannot be replaced after upload; quiz scoring is client-side; chat history is not saved; search is not relevance-ranked; recommendations are rule-based, not machine learning; free hosting tiers sleep and have limits.
+No video transcription (AI uses text details only); video file cannot be replaced after upload; chat history is kept only while the page is open; search is not relevance-ranked; recommendations are rule-based (explainable), not machine learning; free hosting tiers sleep and have limits.
 
 ## Future scope
-Streaks and progress dashboard, creator profiles and playlists, transcript-based AI, relevance-ranked search (text index), email verification and password reset, comments, notifications, analytics.
+Spaced-repetition reminders, creator profiles and playlists, automatic audio transcripts for the AI, relevance-ranked search (text index), email verification and password reset, comments, notifications, analytics.
 
 ## Demo sequence (about 8 minutes)
 1. Landing page, then **Start watching** as a guest: scroll reels, show one playing at a time.
@@ -123,5 +123,14 @@ Streaks and progress dashboard, creator profiles and playlists, transcript-based
 - *How do you limit cost and abuse?* Per-user rate limit, caching of explanations, stored quizzes, short input limits.
 - *Can the provider be changed?* Yes; provider code is isolated in `services/ai/providers`.
 
+**Final round: learning features**
+- *How are recommendations made?* A scoring formula over the student's own likes, saves, watched reels and quiz results (saves count most, quiz averages below 60% boost a topic), plus level fit, popularity and freshness. Every suggestion shows a plain-language reason. It is rule-based on purpose: it is explainable, works with a small catalogue, and needs no training data.
+- *How do you stop cheating in quizzes?* Correct answers never leave the server until the answers are submitted; the server does the scoring; extra fields from the browser are ignored; every attempt is stored.
+- *Why difficulty levels?* The same reel can be tested at recall, understanding or reasoning level; the AI is prompted for each and one quiz is stored per reel and level.
+- *Are the progress numbers real?* Yes. Each comes from a stored record (views, attempts, saves, likes, daily activity). A new student sees an empty state instead of placeholder numbers.
+- *What counts as "watched"?* A logged-in student has the reel playing for at least 3 seconds; "finished" means 85% of its length.
+- *What happens to old data?* A migration runs at start-up: old quizzes become "medium" quizzes and the unique index is updated. Nothing is deleted.
+- *How does the AI explainer keep context?* The browser sends the recent messages with every question and the server adds the reel's text details to the system prompt; the server itself stores no conversation.
+
 **Testing**
-- *What did you test?* 51 backend integration tests on a real MongoDB and 32 frontend behaviour tests, plus a manual checklist. ImageKit and Gemini calls were tested against mocks; real calls are checked manually.
+- *What did you test?* 83 backend integration tests on a real MongoDB and 60 frontend behaviour tests, plus a manual checklist. ImageKit and Gemini calls were tested against mocks; real calls are checked manually.

@@ -46,3 +46,21 @@
 ## Files
 - Backend: `server.js`, `scripts/seed.js`, `src/app.js`, `src/config/{env,db}.js`, `src/models/{User,Category,Reel,Like,SavedReel,Quiz,Report}.js`, `src/middleware/{auth,validate,upload,rateLimit,errorHandler}.js`, `src/validators/{common,auth,reel,ai}.js`, `src/controllers/{auth,user,category,reel,interaction,admin,ai}Controller.js`, `src/routes/*Routes.js`, `src/services/{reelService,fileChecks,imagekitService}.js`, `src/services/ai/{aiService,prompts,cache}.js`, `src/services/ai/providers/gemini.js`, `src/utils/{ApiError,auth,helpers}.js`, `tests/*`.
 - Frontend: `src/{main,App}.jsx`, `index.css`, `layouts/*`, `pages/*` (+ `pages/admin/*`), `components/*` (+ `components/admin/*`), `context/{Auth,Toast}Context.jsx`, `hooks/*`, `services/*`, `utils/*`, `test/*`, `vercel.json`.
+
+## Final round (Build & Innovation Showcase)
+Goal: upgrade the MVP into WATCH, UNDERSTAND, PRACTICE, IMPROVE without rebuilding it.
+
+| Area | Change | Why |
+|---|---|---|
+| AI concept explainer | Reel-scoped chat with conversation memory (`POST /ai/reels/:id/chat`); optional transcript/notes field on reels | Follow-up questions about the reel being watched, with more accurate answers and no pretending to see the video |
+| Quizzes | Difficulty levels, answers withheld until submission, server-side scoring, stored attempts, history, retry | The MVP sent correct answers to the browser and scored there; now the score can be trusted |
+| Personalised learning | `GET /reels/recommended`, "For you" feed tab, a reason on every recommendation | Rule-based and explainable, uses likes, saves, views and quiz results |
+| Progress | `GET /progress`, `/progress` page, daily activity, streak, per-topic status | Only counted data; honest empty state |
+| Tracking | `POST /reels/:id/view` plus a frontend hook | Needed so "watched" is real |
+| Admin | Transcript field, quiz and view totals on the dashboard | Better AI input, visibility |
+
+Preserved: every MVP endpoint, page, model and test. `/ai/chat`, `/ai/reels/:id/explain` and `/summary` are unchanged. The only intentional behaviour change is the quiz (see API.md). No new dependencies, no new environment variables, no data deleted. Existing quizzes are upgraded automatically at server start (`src/config/migrations.js`).
+
+Verification: backend 83 tests (51 original + 32 new), frontend 60 tests (31 original + 29 new), live smoke test on a real server, production build.
+
+New files: backend `config/migrations.js`, `models/{QuizAttempt,ReelView,ActivityDay}.js`, `services/{activity,quiz,recommendation,progress}Service.js`, `controllers/{quiz,learning}Controller.js`, `routes/{quiz,progress}Routes.js`, `validators/{quiz,learning}.js`, tests `quiz.test.js`, `learning.test.js`; frontend `pages/Progress.jsx`, `components/ReelChatPanel.jsx`, `hooks/useWatchTracker.js`, `services/{learning,quiz}Service.js`, `utils/{time,chat}.js`, `test/final.test.jsx`. Modified files are listed in the update notes.

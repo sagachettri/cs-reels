@@ -2,7 +2,9 @@
 
 **Built by Soni Singh and Sagar Chettri.**
 
-**Short-form learning videos for computer science students.** Swipe through bite-sized videos on DSA, web development, core CS and career tips, then save them, test yourself with an AI quiz, or ask an AI tutor, all in one place.
+**Short-form learning videos for computer science students.** Swipe through bite-sized videos on DSA, web development, core CS and career tips, then understand them with an AI tutor, practise with adaptive quizzes, and watch your progress grow, all in one place.
+
+**WATCH → UNDERSTAND → PRACTICE → IMPROVE**
 
 | | |
 |---|---|
@@ -19,6 +21,18 @@ Students lose study time to entertainment-first short-video apps, while long tut
 ## The solution
 CS Reels is a learning-only reels platform. Each reel teaches one idea, sits in a topic and a difficulty level, and can link to docs, articles and practice problems. Students can like and save reels for revision and use AI to understand a reel better.
 
+## Final round upgrade
+The Round 2 MVP was extended, not rebuilt. Every earlier feature, endpoint and test still works.
+
+| Step | What is new |
+|---|---|
+| **Watch** | A **For you** feed tab ranked from your own likes, saves, watched reels and quiz results, with a plain-language reason on every reel. Real watch tracking (3+ seconds on a reel counts). |
+| **Understand** | **Ask the AI about this reel**: a follow-up conversation that remembers what you asked, grounded in the reel's text details and optional admin transcript. It never pretends to watch the video. |
+| **Practice** | **Adaptive quizzes**: Easy, Medium or Hard; correct answers stay on the server until you submit; scored on the server; explanations after submission; every attempt saved; retake any time. |
+| **Improve** | **My progress**: reels watched and finished, quiz scores, 7-day activity chart, learning streak, per-topic status (strong, needs practice), quiz history and recommended next reels. Only real, counted data. |
+
+Technical details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ## Screenshots
 | Landing | Reels feed (mobile) |
 |---|---|
@@ -29,6 +43,10 @@ CS Reels is a learning-only reels platform. Each reel teaches one idea, sits in 
 | ![Search](docs/screenshots/05-search.png) | ![AI tutor](docs/screenshots/06-ai-tutor.png) |
 | **Admin: upload a reel** | **Admin: dashboard** |
 | ![Upload](docs/screenshots/07-admin-upload.png) | ![Dashboard](docs/screenshots/08-admin-dashboard.png) |
+| **My progress (final round)** | **For you feed (final round)** |
+| ![Progress](docs/screenshots/09-progress.png) | ![For you](docs/screenshots/10-for-you.png) |
+| **Ask the AI about a reel (final round)** | |
+| ![Reel AI chat](docs/screenshots/11-reel-ai-chat.png) | |
 
 ## Features
 
@@ -45,10 +63,17 @@ CS Reels is a learning-only reels platform. Each reel teaches one idea, sits in 
 
 ### AI features (Google Gemini, called only from the backend)
 - **Explain this reel** (simple or detailed) and **summary**
-- **Quiz generator:** 3 to 5 multiple-choice questions, validated before display, stored and reused
+- **Ask the AI about this reel:** follow-up chat that keeps the conversation context
+- **Quiz generator:** 3 to 5 multiple-choice questions at Easy, Medium or Hard, validated before display, stored and reused; answers revealed only after submission
 - **AI tutor chat** for general CS questions
 
-The AI receives only a reel's **text details** (title, description, key takeaway, tags). It does **not** watch the video, and the interface says so.
+### Learning features (final round)
+- **Personalised "For you" feed** with an explanation for every recommendation
+- **Progress dashboard:** watched and finished reels, quiz scores and history, 7-day chart, streak, per-topic strengths and weak spots
+- **Quiz history and retries**, with best score and attempt count
+- **Admin transcript/notes** field that makes AI answers more accurate
+
+The AI receives only a reel's **text details** (title, description, key takeaway, tags and the optional transcript/notes). It does **not** watch the video, and the interface says so.
 
 ## Tech stack
 | Layer | Technology |
@@ -122,30 +147,30 @@ Without the ImageKit and Gemini keys the app still runs; uploads and AI features
 
 ## Tests
 ```bash
-cd backend && npm test      # 51 integration tests, real MongoDB, uses a separate "csreels_test" database
-cd frontend && npm test     # 32 behaviour tests
+cd backend && npm test      # 83 integration tests, real MongoDB, uses a separate "csreels_test" database
+cd frontend && npm test     # 60 behaviour tests
 ```
-Covered: authentication, role protection, validation, NoSQL-injection attempts, feed, search and pagination, likes and saves (including simultaneous requests), upload rules and failure cleanup, AI validation and caching, and the main screens and flows. ImageKit and Gemini are tested against mock servers; the real services need your keys.
+Covered: authentication, role protection, validation, NoSQL-injection attempts, feed, search and pagination, likes and saves (including simultaneous requests), upload rules and failure cleanup, AI validation and caching, quiz integrity and scoring, recommendations, progress and streaks, data upgrade from the MVP, and the main screens and flows. ImageKit and Gemini are tested against mock servers; the real services need your keys.
 
 ## API
-Full endpoint list: [`docs/API.md`](docs/API.md).
+Full endpoint list: [`docs/API.md`](docs/API.md). Architecture, data model and design decisions: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Security highlights
-Hashed passwords; HTTP-only cookies; server-side role checks on every admin route; validation on every request; escaped search input; uploads checked by type, size and file signature before storage; uploaded files removed if saving fails; rate limits on login, reports, AI and the API; secrets only in environment variables (`.env` is git-ignored).
+Hashed passwords; HTTP-only cookies; server-side role checks on every admin route; validation on every request; escaped search input; quiz answers withheld until submission and scored on the server; uploads checked by type, size and file signature before storage; uploaded files removed if saving fails; rate limits on login, reports, AI and the API; secrets only in environment variables (`.env` is git-ignored).
 
 ## Limitations (prototype)
-- AI sees only reel text, not the video (no transcription yet).
+- AI sees only reel text (including optional admin notes), not the video; there is no automatic audio transcription yet.
 - A reel's video file cannot be replaced after upload (upload a new reel instead).
-- Quiz scoring happens in the browser; chat history is not saved.
-- Search is not relevance-ranked; recommendations are rule-based, not machine learning.
+- Chat history is kept only while the page is open.
+- Search is not relevance-ranked; recommendations are rule-based and explainable, not machine learning.
 
 ## Roadmap
-Streaks and progress dashboard, creator profiles and playlists, transcript-based AI, email verification and password reset, comments, analytics.
+Spaced-repetition reminders for weak topics, creator profiles and playlists, automatic audio transcripts, email verification and password reset, comments.
 
 ## Acknowledgements and originality
 - Built with open-source libraries: React, Vite, React Router, Axios, Express, Mongoose, zod, jsonwebtoken, bcryptjs, multer, helmet, express-rate-limit, Vitest, Supertest and others listed in the `package.json` files, each under its own license.
-- Third-party services: MongoDB Atlas, ImageKit, Google Gemini API.
-- We used an AI assistant (Claude by Anthropic) during development to help plan the project, took help whenever got stuck in code writing and debug code and documentation. We wrote most of the code, ran, tested and integrated the result ourselves.
+- Third-party services: MongoDB Atlas, ImageKit, Google Gemini API. No new libraries were added in the final round.
+- We used an AI assistant (Claude by Anthropic) during development to help plan the project and to write and debug code and documentation. We ran, tested and integrated the result ourselves.
 
 ## Demo content and credits
 The reels in the demo are sample content used only to show the platform working. They are not presented as the team's own teaching work.

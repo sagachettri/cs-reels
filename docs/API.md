@@ -46,18 +46,20 @@ Auth column: **-** public, **opt** works for guests (adds liked/saved flags when
 | GET | /reels/search | opt | `q` (1-100 chars, required), `category`, `page, limit` | matches title, description, tags and category name; input is escaped |
 | GET | /reels/:id | opt | | 404 for drafts unless admin |
 | GET | /reels/:id/related | opt | | up to 6, rule-based: shared tags weigh more than shared category |
+| GET | /reels/recommended | opt | `page, limit` | **For you**: ranked from the student's likes, saves, watched reels and quiz results; each reel has a `reason`. Guests and new students get popular and new reels (`personalized: false`) |
+| POST | /reels/:id/view | user | `watchedSec` (0-3600), `completed`, `tzOffset` | records real watching; returns `{ viewCount, completed }` |
 | POST / DELETE | /reels/:id/like | user | | idempotent; returns `{ liked, likesCount, savesCount }` |
 | POST / DELETE | /reels/:id/save | user | | returns `{ saved, likesCount, savesCount }` |
 | POST | /reels/:id/report | user | `reason` (inaccurate, copyright, inappropriate, broken-media, other), `details?` | 409 `ALREADY_REPORTED` |
 
-Reel object: `id, title, description, videoUrl, thumbnailUrl, durationSec, category{id,name,slug}, tags[], level, keyTakeaway, resources[{title,url,type}], creator, creditName, status, likesCount, savesCount, createdAt, updatedAt, liked, saved`.
+Reel object: `id, title, description, videoUrl, thumbnailUrl, durationSec, category{id,name,slug}, tags[], level, keyTakeaway, hasTranscript, resources[{title,url,type}], creator, creditName, status, likesCount, savesCount, createdAt, updatedAt, liked, saved`. `transcript` (the admin's notes) is added only on `GET /reels/:id` and in the admin list; recommended reels also carry `reason`.
 
 ## Admin (all require the admin role)
 | Method | URL | Notes |
 |---|---|---|
-| GET | /admin/stats | `{ stats: { users, publishedReels, draftReels, likes, saves, openReports, categories }, topReels }` |
+| GET | /admin/stats | `{ stats: { users, publishedReels, draftReels, likes, saves, openReports, categories, quizAttempts, reelViews }, topReels }` |
 | GET | /admin/reels | `page, limit, status, q`; includes drafts |
-| POST | /admin/reels | `multipart/form-data`: `video` (MP4/WebM, required), `thumbnail?` (JPG/PNG/WebP), `title, description, category`, optional `tags` (JSON array string), `level, keyTakeaway, resources` (JSON string), `creditName, status` (default draft), `durationSec`. Validates first, uploads to ImageKit, then saves; on failure uploaded files are deleted. |
+| POST | /admin/reels | `multipart/form-data`: `video` (MP4/WebM, required), `thumbnail?` (JPG/PNG/WebP), `title, description, category`, optional `tags` (JSON array string), `level, keyTakeaway, transcript` (up to 4000 characters, used as extra context by the AI), `resources` (JSON string), `creditName, status` (default draft), `durationSec`. Validates first, uploads to ImageKit, then saves; on failure uploaded files are deleted. |
 | PATCH | /admin/reels/:id | any subset of the editable fields (not the video file) |
 | DELETE | /admin/reels/:id | also removes likes, saves, quiz, reports and the ImageKit files |
 | POST | /admin/categories | `name, description?, order?` |
@@ -67,13 +69,25 @@ Reel object: `id, title, description, videoUrl, thumbnailUrl, durationSec, categ
 | PATCH | /admin/reports/:id | `status` (reviewed, dismissed, actioned), `unpublishReel?` |
 
 ## AI (login required, limited to 30 requests per 10 minutes per user)
-The AI sees only a reel's text fields (title, category, level, description, key takeaway, tags), never the video.
+The AI sees only a reel's text details (title, category, level, description, key takeaway, tags and the optional transcript/notes), never the video.
 
 | Method | URL | Body | Success |
 |---|---|---|---|
 | POST | /ai/reels/:id/explain | `{ mode: "simple" \| "detailed" }` | `{ explanation, mode, cached, basedOn }` |
 | POST | /ai/reels/:id/summary | - | `{ summary, cached, basedOn }` |
-| POST | /ai/reels/:id/quiz | - | `{ quiz: { reelId, questions: [{ question, options[4], correctIndex, explanation }] }, cached, basedOn }`; stored in MongoDB and regenerated if the reel text changes |
-| POST | /ai/chat | `{ messages: [{ role: "user"\|"assistant", content }] }` (1-12 messages, last from user, each up to 1000 chars) | `{ reply }` |
+| POST | /ai/reels/:id/chat | `{ messages: [{ role: "user"\|"assistant", content }] }` (1-12 messages, last from the user, each up to 1000 chars) | `{ reply, basedOn }`: a follow-up conversation about this one reel |
+| POST | /ai/reels/:id/quiz | `{ difficulty: "easy" \| "medium" \| "hard" }` (default medium) | `{ quiz: { quizId, reelId, difficulty, questions: [{ question, options[4] }] }, cached, previous: { attempts, bestPercentage, lastAttemptAt }, basedOn }`. **Answers and explanations are not included.** One quiz is stored per reel and difficulty and regenerated if the reel text changes. |
+| POST | /ai/chat | `{ messages: [...] }` | `{ reply }`: general CS tutor not tied to a reel |
 
 AI errors: `503 AI_NOT_CONFIGURED`, `429 AI_RATE_LIMITED`, `502 AI_UNAVAILABLE`, `502 AI_BAD_RESPONSE` (invalid quiz after one retry), `504 AI_TIMEOUT`.
+
+## Quizzes (login required)
+| Method | URL | Body / query | Success |
+|---|---|---|---|
+| POST | /quizzes/:quizId/submit | `{ answers: [0-3, ...], tzOffset? }` (one number per question) | 201 `{ attemptId, difficulty, score, total, percentage, attemptNumber, bestPercentage, results: [{ question, options, selectedIndex, correctIndex, correct, explanation }] }`. Scored on the server. Errors: 400 `ANSWERS_INCOMPLETE`, 404 `QUIZ_NOT_FOUND` |
+| GET | /quizzes/attempts | `page, limit, reel?` | the student's own history, newest first: `{ attempts: [{ id, quizId, reel{id,title,thumbnailUrl}, difficulty, score, total, percentage, createdAt }], pagination }` |
+
+## Progress (login required)
+| Method | URL | Query | Success |
+|---|---|---|---|
+| GET | /progress | `tzOffset` (minutes ahead of UTC, -840 to 840, default 0) | `{ summary: { reelsWatched, reelsCompleted, watchEvents, quizzesAttempted, distinctQuizzes, averageScore, bestScore, savedCount, likedCount, activeDays, currentStreak, longestStreak }, categories: [{ id, name, slug, totalReels, watched, completed, quizAttempts, averageScore, status }], weekly: [{ date, views, quizzes }] (7 days), recentAttempts[] }`. Category `status`: `not-started`, `in-progress`, `needs-practice` (quiz average below 60%), `strong` (80% or more). Everything is counted from stored activity; `averageScore` is `null` until a quiz is taken. |
