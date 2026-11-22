@@ -11,7 +11,7 @@
 | **Demo video** | https://youtu.be/jw2-t56jVEg |
 | **Source code** | https://github.com/sonisingh01/cs-reels |
 | **Live link** | Not deployed. Run it locally with the [step-by-step instructions](#getting-started) below |
-| **Team** | Soni Singh and Sagar Chettri (both worked on the frontend and the backend, roughly 50-50) |
+| **Team** | Sagar chettri and Soni singh(both worked on the frontend and the backend, roughly 50-50) |
 
 ---
 
