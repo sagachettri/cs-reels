@@ -16,10 +16,12 @@
 ---
 
 ## The problem
-Students lose study time to entertainment-first short-video apps, while long tutorials don't fit the minutes between classes. There is no focused place for quick, organised CS learning with a clear next step.
+Nowadays, short-form video platforms have become a popular way for students to spend their free time. While these platforms provide quick entertainment, students often end up scrolling through videos for hours without gaining anything useful.
+At the same time, traditional learning resources like lengthy tutorials and lectures can be difficult to fit into a busy student schedule.
+We identified an opportunity to turn this habit into something productive: **What if students could enjoy short-form videos while learning something valuable at the same time?**
 
 ## The solution
-CS Reels is a learning-only reels platform. Each reel teaches one idea, sits in a topic and a difficulty level, and can link to docs, articles and practice problems. Around the videos, an AI tutor explains concepts, adaptive quizzes test understanding, and a progress dashboard shows what is working and what needs practice.
+CS Reels is a platform that makes learning easier through short-form videos. Each reel teaches one idea, sits in a topic and a difficulty level, and can link to docs, articles and practice problems. Around the videos, an AI tutor explains concepts, adaptive quizzes test understanding, and a progress dashboard shows what is working and what needs practice.
 
 ## Screenshots
 | Landing | Reels feed (mobile) |
